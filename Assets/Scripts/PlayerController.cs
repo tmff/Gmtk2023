@@ -53,6 +53,26 @@ public class PlayerController : MonoBehaviour
 
     private bool crosshairFollowsMouse = true;
 
+    [SerializeField]
+    private float targetMaxY;
+
+    [Header("Audio")]
+    private AudioSource audioSource;
+
+    [SerializeField]
+    private AudioClip[] footstepClips;
+
+    [SerializeField]
+    private float footstepInterval;
+
+    [SerializeField]
+    private AudioClip rockPickupClip,rockThrowClip;
+
+
+    [SerializeField]
+    private AudioClip rockLandClip;
+
+
 
 
 
@@ -60,10 +80,12 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
         OnHoldingRockChanged += ChangeSpeedWhenHoldingRock;
         OnHoldingRockChanged += ActivateCrosshair;
         OnHoldingRockChanged += ChangeSpriteToHoldRock;
         mainCamera = Camera.main;
+        StartCoroutine(PlayFootStepAudio());
     }
 
     // Update is called once per frame
@@ -93,6 +115,16 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    IEnumerator PlayFootStepAudio()
+    {
+        yield return new WaitForSeconds(footstepInterval);
+        if(animator.GetBool("isWalking"))
+        {
+            audioSource.PlayOneShot(footstepClips[Random.Range(0,footstepClips.Length)]);
+        }
+        StartCoroutine(PlayFootStepAudio());
+    }
+
 
     void FixedUpdate()
     {
@@ -101,7 +133,7 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.gameObject.tag == "Rock" && !holdingRock)
+        if(collision.gameObject.tag == "Rock" && !holdingRock && !crosshairObject.activeSelf)
         {
             Debug.Log("Collided with rock");
             rock = collision.gameObject;
@@ -109,6 +141,12 @@ public class PlayerController : MonoBehaviour
             rock.transform.SetParent(transform);
             rock.transform.localPosition = new Vector3(0,0.8f,0);
             rock.GetComponent<Collider2D>().enabled = false;
+            audioSource.PlayOneShot(rockPickupClip,1f);
+        }
+
+        if(collision.gameObject.tag == "Skier")
+        {
+            Scorer.instance.DecreaseLife();
         }
     }
 
@@ -136,14 +174,20 @@ public class PlayerController : MonoBehaviour
     private void ThrowRock()
     {
         Debug.Log("Rock thrown");
+        holdingRock = false;
         CameraFollow cameraFollow = mainCamera.GetComponent<CameraFollow>();
         SpriteRenderer rockSpriteRenderer = rock.GetComponent<SpriteRenderer>();
         rockSpriteRenderer.sortingOrder = 100;
-        holdingRock = false;
         crosshairFollowsMouse = false;
         rock.transform.SetParent(null);
 
+        audioSource.PlayOneShot(rockThrowClip,1f);
+
         Vector2 target = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        if(target.y > targetMaxY)
+        {
+            target.x = Mathf.Min(target.x,Random.Range(-15f,-20f));
+        }
 
         float distance = Vector2.Distance(transform.position,target);
 
@@ -155,6 +199,7 @@ public class PlayerController : MonoBehaviour
         //Move rock to cursor over time
         LeanTween.move(rock, target, timeToTarget).setEase(LeanTweenType.easeOutQuad).setOnComplete(() => {
             rock.GetComponent<Collider2D>().enabled = true;
+            rock.GetComponent<AudioSource>().PlayOneShot(rockLandClip);
             rockSpriteRenderer.sortingOrder = 0;
             DisableCrosshair();
             if(cameraFollow != null)

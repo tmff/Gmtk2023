@@ -21,12 +21,12 @@ AnimationClip:
   - curve:
     - time: 0
       value: {fileID: -492553540, guid: ea53c0116902f8a4c9c36daa103e5399, type: 3}
-    - time: 0.33333334
+    - time: 0.41666666
       value: {fileID: -1937360646, guid: ea53c0116902f8a4c9c36daa103e5399, type: 3}
-    - time: 0.6666667
+    - time: 0.8333333
       value: {fileID: -492553540, guid: ea53c0116902f8a4c9c36daa103e5399, type: 3}
     attribute: m_Sprite
-    path: 
+    path: Yeti
     classID: 212
     script: {fileID: 0}
   m_SampleRate: 60
@@ -37,7 +37,7 @@ AnimationClip:
   m_ClipBindingConstant:
     genericBindings:
     - serializedVersion: 2
-      path: 0
+      path: 2791371761
       attribute: 0
       script: {fileID: 0}
       typeID: 212
@@ -53,7 +53,7 @@ AnimationClip:
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 0.68333334
+    m_StopTime: 0.84999996
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0

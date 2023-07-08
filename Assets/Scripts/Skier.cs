@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor.Animations;
 
 public class Skier : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class Skier : MonoBehaviour
     private GameObject snowHead;
 
     [Header("AI")]
+    public bool usesAI = true;
     public float obstacleCheckInterval = 5;
 
     private enum SteerDirection
@@ -32,8 +34,8 @@ public class Skier : MonoBehaviour
     [SerializeField]
     private bool isOnBlue = true;
 
-    [SerializeField]
-    GameObject blueCheckPointParent,redCheckPointParent;
+
+    public GameObject blueCheckPointParent,redCheckPointParent;
 
     [SerializeField]
     private int flagIndex = 0;
@@ -50,15 +52,43 @@ public class Skier : MonoBehaviour
     [SerializeField]
     private int rayAngles = 10;
 
+    private bool hasFinished = false;
+
+    public bool spawnsWave = false;
+
+    public int knockoutSpeed = 10;
+
+    [Header("Animation")]
+    private Animator animator;
+
+    [SerializeField]
+    private AnimatorController maleController,femaleController;
+
+    [Header("Audio")]
+    private AudioSource audioSource;
+
+    [SerializeField]
+    private AudioClip landClip,hitObstacleClip;
+
     void Start()
     {
+        animator = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody2D>();
+        audioSource = GetComponent<AudioSource>();
         rb.AddForce(Vector2.down * initialSpeed, ForceMode2D.Impulse);
         StartCoroutine(CheckForObstacles());
         StartCoroutine(PropelRoutine());
         if(Random.value < 0.5f)
         {
             isOnBlue = false;
+        }
+        if(Random.value < 0.5f)
+        {
+            animator.runtimeAnimatorController = maleController;
+        }
+        else
+        {
+            animator.runtimeAnimatorController = femaleController;
         }
 
     }
@@ -74,13 +104,25 @@ public class Skier : MonoBehaviour
         {
             Debug.Log("Hit obstacle");
             //Add points or something
-            rb.AddForce(new Vector2(Random.Range(0.5f,1f),Random.Range(0.5f,1f)) * initialSpeed, ForceMode2D.Impulse);
+
+            rb.AddForce(new Vector2(Random.Range(0.5f,1f),Random.Range(0.5f,1f)) * knockoutSpeed, ForceMode2D.Impulse);
             rb.AddTorque(100f, ForceMode2D.Impulse);
             GetComponentInChildren<Collider2D>().enabled = false;
             StopAllCoroutines();
+
+            audioSource.PlayOneShot(hitObstacleClip);
             LeanTween.scale(gameObject, new Vector3(scaleSize,scaleSize,scaleSize), 1f).setLoopPingPong(1).setEaseOutQuad().setOnComplete(() => {
                 rb.velocity = Vector2.zero;
                 rb.angularVelocity = 0f;
+                audioSource.PlayOneShot(landClip);
+                if(!hasFinished)
+                {
+                    Scorer.instance.AddKnockoutScore();
+                }
+                if(spawnsWave)
+                {
+                    FindObjectOfType<Spawner>().SpawnWave();    
+                }
                 LeanTween.rotateZ(gameObject, Random.Range(170f,190f), 1f).setEaseOutQuad().setOnComplete(() => {
                     snowHead.SetActive(true);
                 });
@@ -91,9 +133,21 @@ public class Skier : MonoBehaviour
 
 
 
+
+
+
     IEnumerator CheckForObstacles()
     {
         yield return new WaitForSeconds(obstacleCheckInterval);
+
+        int numberOfFlags = isOnBlue ? blueCheckPointParent.transform.childCount : redCheckPointParent.transform.childCount;
+
+        if(flagIndex >= numberOfFlags - 1)
+        {
+            Debug.Log(name + " finished");
+            EndCourse();
+            yield break;
+        }
 
         float distanceToCurrentFlag;
         float distanceToNextFlag;
@@ -173,8 +227,14 @@ public class Skier : MonoBehaviour
 
     void Propel()
     {
+        if(hasFinished)return;
+
         rb.AddForce(transform.up * initialSpeed * -1f * gravityMod, ForceMode2D.Impulse);
 
+        if(!usesAI)
+        {
+            return;
+        }
         Debug.Log("Propel: " + currentSteerDirection);
         switch(currentSteerDirection)
         {
@@ -196,6 +256,8 @@ public class Skier : MonoBehaviour
                 }
                 break;
         }
+
+        animator.SetTrigger("propel");
     }
 
     IEnumerator PropelRoutine()
@@ -211,6 +273,24 @@ public class Skier : MonoBehaviour
             v.x * Mathf.Sin(delta) + v.y * Mathf.Cos(delta)
         );
     }
+
+
+    private void EndCourse()
+    {
+        hasFinished = true;
+        //Add score
+        Scorer.instance.AddFinishCourseScore();
+        GetComponentInChildren<Collider2D>().enabled = false;
+        LeanTween.move(gameObject, new Vector3(24,-24,0),10f).setOnComplete(() => {
+            Destroy(gameObject);
+        });
+        if(spawnsWave)
+        {
+            FindObjectOfType<Spawner>().SpawnWave();    
+        }
+    }
+
+
 
 
 
