@@ -72,6 +72,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private AudioClip rockLandClip;
 
+    [SerializeField]
+    private AudioClip pieClip;
+
+    [SerializeField]
+    private GameObject tutorialKey;
+
 
 
 
@@ -86,6 +92,19 @@ public class PlayerController : MonoBehaviour
         OnHoldingRockChanged += ChangeSpriteToHoldRock;
         mainCamera = Camera.main;
         StartCoroutine(PlayFootStepAudio());
+
+        GameObject musicObject = GameObject.FindGameObjectWithTag("Music");
+        if(musicObject != null)
+        {
+            if(PlayerPrefs.GetInt("Music",1) == 1)
+            {
+                musicObject.GetComponent<AudioSource>().Play();
+            }
+            else
+            {
+                musicObject.GetComponent<AudioSource>().Stop();
+            }
+        }
     }
 
     // Update is called once per frame
@@ -113,6 +132,17 @@ public class PlayerController : MonoBehaviour
         {
             ThrowRock();
         }
+
+        if(Input.anyKeyDown && tutorialKey.activeSelf)
+        {
+            StartCoroutine(ShortDelay());
+        }
+    }
+
+    IEnumerator ShortDelay()
+    {
+        yield return new WaitForSeconds(2f);
+        LeanTween.moveLocalY(tutorialKey,1440f,4f).setOnComplete(()=>{tutorialKey.SetActive(false);});
     }
 
     IEnumerator PlayFootStepAudio()
@@ -150,6 +180,16 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void OnTriggerEnter2D(Collider2D collider)
+    {
+        if(collider.gameObject.tag == "Pie")
+        {
+            speed *= 1.3f;
+            collider.gameObject.SetActive(false);
+            audioSource.PlayOneShot(pieClip,0.5f);
+        }
+    }
+
     private void ChangeSpeedWhenHoldingRock(bool holdingRock)
     {
         if(holdingRock)
@@ -179,7 +219,8 @@ public class PlayerController : MonoBehaviour
         SpriteRenderer rockSpriteRenderer = rock.GetComponent<SpriteRenderer>();
         rockSpriteRenderer.sortingOrder = 100;
         crosshairFollowsMouse = false;
-        rock.transform.SetParent(null);
+        GameObject currentMap = Spawner.instance.GetMap();
+        rock.transform.SetParent(currentMap.transform);
 
         audioSource.PlayOneShot(rockThrowClip,1f);
 
@@ -202,7 +243,7 @@ public class PlayerController : MonoBehaviour
             rock.GetComponent<AudioSource>().PlayOneShot(rockLandClip);
             rockSpriteRenderer.sortingOrder = 0;
             DisableCrosshair();
-            if(cameraFollow != null)
+            if(cameraFollow != null && PlayerPrefs.GetInt("CameraShake",1) == 1)
             {
                 cameraFollow.shakeDuration = 0.2f;
             }

@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor.Animations;
 
 public class Skier : MonoBehaviour
 {
@@ -62,13 +61,14 @@ public class Skier : MonoBehaviour
     private Animator animator;
 
     [SerializeField]
-    private AnimatorController maleController,femaleController;
+    private RuntimeAnimatorController maleController,femaleController;
 
     [Header("Audio")]
     private AudioSource audioSource;
 
     [SerializeField]
     private AudioClip landClip,hitObstacleClip;
+
 
     void Start()
     {
@@ -92,6 +92,8 @@ public class Skier : MonoBehaviour
         }
 
     }
+
+
 
 
     void OnCollisionEnter2D(Collision2D col)
@@ -118,10 +120,6 @@ public class Skier : MonoBehaviour
                 if(!hasFinished)
                 {
                     Scorer.instance.AddKnockoutScore();
-                }
-                if(spawnsWave)
-                {
-                    FindObjectOfType<Spawner>().SpawnWave();    
                 }
                 LeanTween.rotateZ(gameObject, Random.Range(170f,190f), 1f).setEaseOutQuad().setOnComplete(() => {
                     snowHead.SetActive(true);
@@ -215,11 +213,6 @@ public class Skier : MonoBehaviour
         if(distanceToNextFlag < distanceToCurrentFlag || transform.position.y < currentFlag.position.y)
         {
             flagIndex++;
-            if(flagIndex >= (isOnBlue ? blueCheckPointParent.transform.childCount : redCheckPointParent.transform.childCount))
-            {
-                //Finish skier
-                Debug.Log("Finish skier");
-            }
         }
         StartCoroutine(CheckForObstacles());
     }
@@ -284,10 +277,6 @@ public class Skier : MonoBehaviour
         LeanTween.move(gameObject, new Vector3(24,-24,0),10f).setOnComplete(() => {
             Destroy(gameObject);
         });
-        if(spawnsWave)
-        {
-            FindObjectOfType<Spawner>().SpawnWave();    
-        }
     }
 
 

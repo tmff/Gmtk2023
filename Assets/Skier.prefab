@@ -50,7 +50,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 1
+  m_LinearDrag: 1.3
   m_AngularDrag: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
@@ -70,13 +70,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7711699905b822e4b8fb40eeb96462ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialSpeed: 4.5
-  propelInterval: 0.4
+  initialSpeed: 4
+  propelInterval: 0.35
   collisionSpeedMin: 0
   scaleSize: 1.5
   snowHead: {fileID: 2486066117053931719}
   usesAI: 1
-  obstacleCheckInterval: 0.5
+  obstacleCheckInterval: 0.35
   currentSteerDirection: 2
   isOnBlue: 1
   blueCheckPointParent: {fileID: 0}
@@ -84,10 +84,10 @@ MonoBehaviour:
   flagIndex: 0
   rightLeftForceMod: 0.9
   gravityMod: 0.3
-  rayCastRange: 6
-  rayAngles: 22
+  rayCastRange: 8
+  rayAngles: 20
   spawnsWave: 0
-  knockoutSpeed: 10
+  knockoutSpeed: 15
   maleController: {fileID: 9100000, guid: 650c153749169a940938065388299de2, type: 2}
   femaleController: {fileID: 9100000, guid: 14b2a76231efd4b469a0a44b8be5d4ac, type: 2}
   landClip: {fileID: 8300000, guid: 5a0d063539d110143bb05f6c83d5f2e0, type: 3}

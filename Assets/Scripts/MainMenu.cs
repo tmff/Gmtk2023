@@ -151,7 +151,15 @@ public class MainMenu : MonoBehaviour
 
 
 
+    public void CameraShakeToggle(bool toggle)
+    {
+        PlayerPrefs.SetInt("CameraShake",toggle ? 1 : 0);
+    }
 
+    public void MusicToggle(bool toggle)
+    {
+        PlayerPrefs.SetInt("Music",toggle ? 1 : 0);
+    }
 
 
 

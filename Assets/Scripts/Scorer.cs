@@ -47,6 +47,8 @@ public class Scorer : MonoBehaviour
     [SerializeField]
     private AudioClip loseHealthClip;
 
+    public GameObject gameFinishedPanel;
+
 
     void Awake()
     {
@@ -124,7 +126,9 @@ public class Scorer : MonoBehaviour
         if(lives == 0)
         {
             //Game over
+            gameFinishedPanel.SetActive(true);
             Debug.Log("Game over");
+            
         }
         GameObject heart = lifeParent.transform.GetChild(lives).gameObject;
         LeanTween.scale(heart, Vector3.zero, 0.15f).setEase(LeanTweenType.easeInOutQuad);
