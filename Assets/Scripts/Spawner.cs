@@ -117,6 +117,7 @@ public class Spawner : MonoBehaviour
             
             LeanTween.value(gameObject, (float value) => {
                 sun.intensity = value;
+                sun.color = Color.white;
             }, 0, 1, 2f);
         });
     }
